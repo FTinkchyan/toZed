@@ -1,0 +1,81 @@
+<!-- templates/stats.html -->
+{% extends "base.html" %}
+
+{% block title %}Статистика - HR Вакансии{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="display-5 mb-4">Статистика вакансий</h1>
+        
+        <div class="row mb-5">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3>{{ total_vacancies }}</h3>
+                        <p class="mb-0">Всего вакансий</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3>{{ stats|length }}</h3>
+                        <p class="mb-0">Регионов с вакансиями</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3>{{ last_update[:10] if last_update else 'Нет данных' }}</h3>
+                        <p class="mb-0">Последнее обновление</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Распределение по регионам</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Регион</th>
+                                <th>Количество вакансий</th>
+                                <th>Процент</th>
+                                <th>Прогресс</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in stats %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('vacancies', region=stat.region_id) }}" 
+                                       class="text-decoration-none">
+                                        {{ stat.region }}
+                                    </a>
+                                </td>
+                                <td>{{ stat.count }}</td>
+                                <td>{{ stat.percentage }}%</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" 
+                                             style="width: {{ stat.percentage }}%">
+                                            {{ stat.percentage }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
