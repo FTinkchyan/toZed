@@ -101,7 +101,7 @@ document.getElementById('update-btn').addEventListener('click', function() {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({max_pages: 10})
+        body: JSON.stringify({max_pages: 15})
     })
     .then(response => response.json())
     .then(data => {

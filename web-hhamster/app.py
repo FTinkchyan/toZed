@@ -31,7 +31,7 @@ MILLION_CITIES = {
     999: "Несколько регионов"
 }
 
-def get_hr_vacancies_hh(region_id: Optional[int] = None, max_pages: int = 10) -> List[str]:
+def get_hr_vacancies_hh(region_id: Optional[int] = None, max_pages: int = 15) -> List[str]:
     """
     Получает список ссылок на вакансии в разделе 'Управление персоналом' с hh.ru
     """
@@ -246,7 +246,8 @@ def stats():
 def update_vacancies():
     """Обновление вакансий"""
     try:
-        max_pages = request.json.get('max_pages', 10)
+        max_pages = request.json.get('max_pages', 15)
+        print(max_pages)
         timestamp = datetime.now()
         
         init_db()
