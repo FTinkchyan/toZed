@@ -1,0 +1,87 @@
+<!-- templates/vacancy_detail.html -->
+<div class="vacancy-detail">
+    <h4>{{ vacancy.name }}</h4>
+    
+    {% if vacancy.salary_data %}
+    <div class="mb-3">
+        <strong>Зарплата:</strong>
+        {% if vacancy.salary_data.from and vacancy.salary_data.to %}
+            от {{ vacancy.salary_data.from }} до {{ vacancy.salary_data.to }} {{ vacancy.salary_data.currency }}
+        {% elif vacancy.salary_data.from %}
+            от {{ vacancy.salary_data.from }} {{ vacancy.salary_data.currency }}
+        {% elif vacancy.salary_data.to %}
+            до {{ vacancy.salary_data.to }} {{ vacancy.salary_data.currency }}
+        {% endif %}
+        {% if vacancy.salary_data.gross %}
+            ({{ "до вычета налогов" if vacancy.salary_data.gross else "на руки" }})
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {% if vacancy.employer_data %}
+    <div class="mb-3">
+        <strong>Работодатель:</strong> {{ vacancy.employer_data.name }}
+    </div>
+    {% endif %}
+    
+    {% if vacancy.experience_data %}
+    <div class="mb-3">
+        <strong>Опыт работы:</strong> {{ vacancy.experience_data.name }}
+    </div>
+    {% endif %}
+    
+    {% if vacancy.employment_data %}
+    <div class="mb-3">
+        <strong>Тип занятости:</strong> {{ vacancy.employment_data.name }}
+    </div>
+    {% endif %}
+    
+    {% if vacancy.schedule_data %}
+    <div class="mb-3">
+        <strong>График работы:</strong> {{ vacancy.schedule_data.name }}
+    </div>
+    {% endif %}
+    
+    {% if vacancy.snippet_data %}
+    <div class="mb-3">
+        {% if vacancy.snippet_data.requirement %}
+        <div>
+            <strong>Требования:</strong> 
+            <div>{{ vacancy.snippet_data.requirement|safe }}</div>
+        </div>
+        {% endif %}
+        
+        {% if vacancy.snippet_data.responsibility %}
+        <div>
+            <strong>Обязанности:</strong> 
+            <div>{{ vacancy.snippet_data.responsibility|safe }}</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {% if vacancy.published_at %}
+    <div class="mb-3">
+        <strong>Опубликовано:</strong> {{ vacancy.published_at[:10] }}
+    </div>
+    {% endif %}
+    
+    {% if vacancy.contacts_data %}
+    <div class="mb-3">
+        <strong>Контакты:</strong>
+        {% if vacancy.contacts_data.name %}
+            <div>Контактное лицо: {{ vacancy.contacts_data.name }}</div>
+        {% endif %}
+        {% if vacancy.contacts_data.email %}
+            <div>Email: {{ vacancy.contacts_data.email }}</div>
+        {% endif %}
+        {% if vacancy.contacts_data.phones %}
+            <div>Телефоны:
+                {% for phone in vacancy.contacts_data.phones %}
+                    {{ phone.formatted }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>

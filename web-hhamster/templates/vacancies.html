@@ -25,10 +25,21 @@
                 </div>
             </div>
         </div>
+
+        <!-- Блок информации о странице -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <small class="text-muted">
+                    <strong>На странице:</strong> {{ vacancies|length }} вакансий<br>
+                    <strong>Всего:</strong> {{ total_vacancies }} вакансий<br>
+                    <strong>Страница:</strong> {{ current_page }} из {{ total_pages }}
+                </small>
+            </div>
+        </div>
     </div>
-    
+
     <div class="col-md-9">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
             <h2>
                 {% if current_region %}
                     Вакансии - {{ regions.get(current_region, 'Неизвестный регион') }}
@@ -36,48 +47,74 @@
                     Все вакансии
                 {% endif %}
             </h2>
-            <span class="badge bg-primary fs-6">{{ vacancies|length }} вакансий</span>
+            <div>
+                <span class="badge bg-primary fs-6">{{ vacancies|length }} из {{ total_vacancies }}</span>
+            </div>
         </div>
 
         {% if vacancies %}
-            <div class="list-group">
+            <!-- Быстрая навигация по страницам для большого количества данных -->
+            {% if total_pages > 1 %}
+            <div class="card mb-3">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Быстрый переход:</small>
+                        <div>
+                            {% for quick_page in [1, 2, 3, current_page-1, current_page, current_page+1, total_pages-2, total_pages-1, total_pages] %}
+                                {% if quick_page > 0 and quick_page <= total_pages and quick_page not in [1, 2, 3, current_page-1, current_page, current_page+1, total_pages-2, total_pages-1, total_pages]|unique %}
+                                    <a href="{{ url_for('vacancies', region=current_region, page=quick_page) }}"
+                                       class="btn btn-sm btn-outline-secondary {% if quick_page == current_page %}active{% endif %}">
+                                        {{ quick_page }}
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Список вакансий с компактным отображением -->
+            <div class="list-group compact-vacancies">
                 {% for vacancy in vacancies %}
-                <div class="list-group-item vacancy-item mb-2 py-2">
+                <a href="#" class="list-group-item list-group-item-action vacancy-item py-2"
+                   data-bs-toggle="modal" data-bs-target="#vacancyModal"
+                   data-vacancy-id="{{ vacancy.vacancy_id }}"
+                   data-vacancy-url="{{ vacancy.url }}">
                     <div class="row align-items-center">
                         <div class="col-md-1">
-                            <span class="text-muted small">#{{ vacancy.id }}</span>
+                            <span class="text-muted small">#{{ (current_page - 1) * 500 + loop.index }}</span>
                         </div>
-                        <div class="col-md-5">
-                            <a href="{{ vacancy.url }}" target="_blank" class="text-decoration-none text-break">
+                        <div class="col-md-7">
+                            <strong class="vacancy-title">{{ vacancy.name|truncate(80) }}</strong>
+                            <div class="small text-muted mt-1">
                                 {{ vacancy.url|truncate(60) }}
-                            </a>
+                            </div>
                         </div>
                         <div class="col-md-2">
                             <span class="badge bg-secondary">{{ vacancy.region }}</span>
                         </div>
-                        <div class="col-md-2 text-muted small">
-                            Добавлено: {{ vacancy.added[:10] }}
-                        </div>
-                        <div class="col-md-2 text-muted small">
-                            Обновлено: {{ vacancy.updated[:10] }}
+                        <div class="col-md-2 text-muted small text-end">
+                            {{ vacancy.updated[:10] }}
                         </div>
                     </div>
-                </div>
+                </a>
                 {% endfor %}
             </div>
 
             <!-- Пагинация -->
             {% if total_pages > 1 %}
             <nav aria-label="Page navigation" class="mt-4">
-                <ul class="pagination justify-content-center">
+                <ul class="pagination justify-content-center flex-wrap">
                     <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
                         <a class="page-link"
                            href="{{ url_for('vacancies', region=current_region, page=current_page-1) }}">
-                            Назад
+                            ← Назад
                         </a>
                     </li>
 
-                    {% for page_num in range(1, total_pages + 1) %}
+                    <!-- Первые страницы -->
+                    {% for page_num in range(1, min(4, total_pages + 1)) %}
                     <li class="page-item {% if page_num == current_page %}active{% endif %}">
                         <a class="page-link"
                            href="{{ url_for('vacancies', region=current_region, page=page_num) }}">
@@ -86,10 +123,46 @@
                     </li>
                     {% endfor %}
 
+                    <!-- Разделитель если нужно -->
+                    {% if current_page > 6 %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+
+                    <!-- Страницы вокруг текущей -->
+                    {% for page_num in range(max(4, current_page - 2), min(current_page + 3, total_pages - 2)) %}
+                    <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                        <a class="page-link"
+                           href="{{ url_for('vacancies', region=current_region, page=page_num) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    <!-- Разделитель если нужно -->
+                    {% if current_page < total_pages - 5 %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+
+                    <!-- Последние страницы -->
+                    {% for page_num in range(max(total_pages - 2, current_page + 3), total_pages + 1) %}
+                    {% if page_num > current_page + 2 %}
+                    <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                        <a class="page-link"
+                           href="{{ url_for('vacancies', region=current_region, page=page_num) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
                     <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
                         <a class="page-link"
                            href="{{ url_for('vacancies', region=current_region, page=current_page+1) }}">
-                            Вперед
+                            Вперед →
                         </a>
                     </li>
                 </ul>
@@ -105,12 +178,78 @@
     </div>
 </div>
 
+<!-- Модальное окно для детальной информации о вакансии -->
+<div class="modal fade" id="vacancyModal" tabindex="-1" aria-labelledby="vacancyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vacancyModalLabel">Детальная информация о вакансии</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="vacancyModalBody">
+                Загрузка...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <a href="#" class="btn btn-primary" id="externalLink" target="_blank">Перейти к вакансии</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .vacancy-item {
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.75rem;
+    transition: background-color 0.2s;
+    border-left: 3px solid transparent;
 }
 .vacancy-item:hover {
     background-color: #f8f9fa;
+    border-left-color: #0d6efd;
+}
+.compact-vacancies .list-group-item {
+    margin-bottom: 2px;
+}
+.vacancy-title {
+    font-size: 0.95rem;
+    line-height: 1.3;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const vacancyModal = document.getElementById('vacancyModal');
+
+    vacancyModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const vacancyId = button.getAttribute('data-vacancy-id');
+        const vacancyUrl = button.getAttribute('data-vacancy-url');
+
+        // Обновляем ссылку на внешний ресурс сразу
+        const externalLink = document.getElementById('externalLink');
+        externalLink.href = vacancyUrl;
+
+        // Загружаем детальную информацию о вакансии
+        fetch(`/vacancy/${vacancyId}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('vacancyModalBody').innerHTML = html;
+            })
+            .catch(error => {
+                document.getElementById('vacancyModalBody').innerHTML =
+                    '<div class="alert alert-danger">Ошибка загрузки данных</div>';
+                console.error('Error:', error);
+            });
+    });
+
+    // Добавляем плавную прокрутку к началу при смене страницы
+    document.querySelectorAll('.page-link').forEach(link => {
+        link.addEventListener('click', function() {
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 100);
+        });
+    });
+});
+</script>
 {% endblock %}
