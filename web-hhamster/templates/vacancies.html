@@ -42,23 +42,25 @@
         {% if vacancies %}
             <div class="list-group">
                 {% for vacancy in vacancies %}
-                <div class="list-group-item vacancy-item mb-3">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">
-                            <a href="{{ vacancy.url }}" target="_blank" class="text-decoration-none">
-                                Вакансия #{{ vacancy.id }}
+                <div class="list-group-item vacancy-item mb-2 py-2">
+                    <div class="row align-items-center">
+                        <div class="col-md-1">
+                            <span class="text-muted small">#{{ vacancy.id }}</span>
+                        </div>
+                        <div class="col-md-5">
+                            <a href="{{ vacancy.url }}" target="_blank" class="text-decoration-none text-break">
+                                {{ vacancy.url|truncate(60) }}
                             </a>
-                        </h5>
-                        <small class="text-muted">Обновлено: {{ vacancy.updated[:10] }}</small>
-                    </div>
-                    <p class="mb-1">
-                        <a href="{{ vacancy.url }}" target="_blank" class="text-break">
-                            {{ vacancy.url }}
-                        </a>
-                    </p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge bg-secondary region-badge">{{ vacancy.region }}</span>
-                        <small class="text-muted">Добавлено: {{ vacancy.added[:10] }}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge bg-secondary">{{ vacancy.region }}</span>
+                        </div>
+                        <div class="col-md-2 text-muted small">
+                            Добавлено: {{ vacancy.added[:10] }}
+                        </div>
+                        <div class="col-md-2 text-muted small">
+                            Обновлено: {{ vacancy.updated[:10] }}
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -69,23 +71,23 @@
             <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination justify-content-center">
                     <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
-                        <a class="page-link" 
+                        <a class="page-link"
                            href="{{ url_for('vacancies', region=current_region, page=current_page-1) }}">
                             Назад
                         </a>
                     </li>
-                    
+
                     {% for page_num in range(1, total_pages + 1) %}
                     <li class="page-item {% if page_num == current_page %}active{% endif %}">
-                        <a class="page-link" 
+                        <a class="page-link"
                            href="{{ url_for('vacancies', region=current_region, page=page_num) }}">
                             {{ page_num }}
                         </a>
                     </li>
                     {% endfor %}
-                    
+
                     <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
-                        <a class="page-link" 
+                        <a class="page-link"
                            href="{{ url_for('vacancies', region=current_region, page=current_page+1) }}">
                             Вперед
                         </a>
@@ -93,7 +95,7 @@
                 </ul>
             </nav>
             {% endif %}
-            
+
         {% else %}
             <div class="alert alert-info text-center">
                 <h4>Вакансии не найдены</h4>
@@ -102,4 +104,13 @@
         {% endif %}
     </div>
 </div>
+
+<style>
+.vacancy-item {
+    padding: 0.5rem 1rem;
+}
+.vacancy-item:hover {
+    background-color: #f8f9fa;
+}
+</style>
 {% endblock %}
